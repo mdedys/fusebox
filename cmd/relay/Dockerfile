@@ -8,14 +8,14 @@ WORKDIR /build
 
 # Cache dependencies through image layer caching
 # dependencies are downloaded and verified only if go.mod or go.sum change
-COPY ./go.mod ./go.sum ./
+COPY go.mod go.sum ./
 RUN go mod download
 RUN go mod verify
 
 # Copy rest of go source files and build target
 # Use RUN cache mount to re-use the GOCACHE between builds
 COPY . .
-RUN --mount=type=cache,target=/root/.cache/go-build ./scripts/build.sh
+RUN --mount=type=cache,target=/root/.cache/go-build go build -o bin/ ./cmd/relay/relay.go
 
 FROM docker.io/alpine:3.16
 
@@ -23,6 +23,4 @@ WORKDIR /
 
 # Copy over the build artifact
 COPY --from=builder /build/bin/* .
-
-
 
